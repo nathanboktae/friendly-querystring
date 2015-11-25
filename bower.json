@@ -1,0 +1,28 @@
+{
+  "name": "friendly-querystring",
+  "description": "JSON.stringify <-> JSON.parse your objects in a friendly readable query string format",
+  "main": "friendly-querystring.js",
+  "authors": [
+    "Nathan Black <nathan@nathanblack.org>"
+  ],
+  "license": "ISC",
+  "keywords": [
+    "querystring",
+    "query-string",
+    "parser",
+    "stringify",
+    "json",
+    "umd"
+  ],
+  "homepage": "https://github.com/nathanboktae/friendly-querystring",
+  "moduleType": [
+    "amd",
+    "globals",
+    "node"
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "tests.js"
+  ]
+}
