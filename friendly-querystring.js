@@ -13,6 +13,20 @@
     }
     if (qs.length === 0) return {}
 
+    var literals = {
+      'true': true,
+      'false': false,
+      'undefined': undefined,
+      '{}': {},
+      '[]': []
+    }
+    function friendly(val) {
+      val = decodeURIComponent(val)
+      if (val in literals) return literals[val]
+      if (val !== '' && !isNaN(Number(val))) return Number(val)
+      return val
+    }
+
     return qs.split('&').reduce(function(query, pair) {
       var equalIdx = pair.indexOf('='),
           val = null,
@@ -20,7 +34,7 @@
 
       if (equalIdx >= 0) {
         key = decodeURIComponent(pair.substr(0, equalIdx))
-        val = decodeURIComponent(pair.substr(equalIdx + 1))
+        val = friendly(pair.substr(equalIdx + 1))
       } else {
         key = decodeURIComponent(pair)
       }
@@ -37,14 +51,15 @@
     }, {})
   },
   stringify: function(query) {
+    function pairUp(key, val) {
+      return encodeURIComponent(key) + (val === null ? '' : '=' + encodeURIComponent(val))
+    }
+
     return Object.keys(query).map(function(key) {
       if (Array.isArray(query[key])) {
-        return query[key].map(function(val) {
-          return encodeURIComponent(key) + '=' + encodeURIComponent(val)
-        }).join('&')
+        return query[key].map(function(val) { return pairUp(key, val) }).join('&')
       } else {
-        if (query[key] === null) return encodeURIComponent(key)
-        return encodeURIComponent(key) + '=' + encodeURIComponent(query[key])
+        return pairUp(key, query[key])
       }
     }).join('&')
   }

@@ -5,12 +5,26 @@ chai.should()
 
 describe('friendly querystring', function() {
   function parsing(str, obj, x) {
-    it(`should parse ${str} as ${obj}`, function() {
+    var what
+    if (arguments.length === 2) {
+      x = obj
+      what = `handle ${str}`
+    } else {
+      what = `parse ${str} as ${obj}`
+    }
+    it(`should ${what}`, function() {
       Object.keys(x).forEach(k => querystring.parse(k).should.deep.equal(x[k]))
     })
   }
   function stringifying(str, obj, x) {
-    it(`should stringify ${obj} to ${str}`, function() {
+    var what
+    if (arguments.length === 2) {
+      x = obj
+      what = `handle ${str}`
+    } else {
+      what = `stringify ${obj} to ${str}`
+    }
+    it(`should ${what}`, function() {
       Object.keys(x).forEach(k => querystring.stringify(x[k]).should.deep.equal(k))
     })
   }
@@ -29,12 +43,39 @@ describe('friendly querystring', function() {
 
       verify('a single pair of string values', 'an object with one key', {
         'foo=bar': { foo: 'bar' },
-        '%20foo=%2520foo%3Dbar': { ' foo': '%20foo=bar' }
+        '%20foo=%2520foo%3Dbar': { ' foo': '%20foo=bar' },
       })
 
-      verify('a single array of string values', 'an object with one array', {
+      verify('a single array of string values', {
         'foo=bar&foo=baz': { foo: ['bar', 'baz'] },
         'foo=foo&foo=': { foo: ['foo', ''] }
+      })
+
+      verify('number coercion', {
+        'a=0&b=-1&c=0.7': {
+          a: 0,
+          b: -1,
+          c: 0.7
+        },
+        'x=0&x=1&x=3&x=7': { x: [0, 1, 3, 7]}
+      })
+
+      verify('boolean coercion', {
+        'a=true&b=false&c=FALSE': {
+          a: true,
+          b: false,
+          c: 'FALSE'
+        },
+        'x=false&x=true&x=TRUE': { x: [false, true, 'TRUE'] }
+      })
+
+      verify('empty string and undefined', {
+        'foo=&foo=undefined&foo': { foo: ['', undefined, null] },
+        'one=&two&three=undefined': {
+          one: '',
+          two: null,
+          three: undefined
+        }
       })
 
       verify('multiple pairs', 'an object with multple keys and values', {
