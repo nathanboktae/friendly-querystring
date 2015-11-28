@@ -39,28 +39,51 @@
         key = decodeURIComponent(pair)
       }
 
-      if (!(key in query)) {
-        query[key] = val
-      } else if (Array.isArray(query[key])) {
-        query[key].push(val)
+      var paths = key.split('.'), iterObj = query
+      for (var i = 0; i < paths.length - 1; i++) {
+        if (iterObj[paths[i]] == null) {
+          iterObj[paths[i]] = isNaN(Number(paths[i + 1])) ? {} : []
+        }
+        iterObj = iterObj[paths[i]]
+      }
+
+      var k = paths[paths.length - 1]
+      if (!(k in iterObj)) {
+        iterObj[k] = val
+      } else if (Array.isArray(iterObj[k])) {
+        iterObj[k].push(val)
       } else {
-        query[key] = [query[key], val]
+        iterObj[k] = [iterObj[k], val]
       }
 
       return query
     }, {})
   },
-  stringify: function(query) {
+  stringify: function(origObj) {
     function pairUp(key, val) {
       return encodeURIComponent(key) + (val === null ? '' : '=' + encodeURIComponent(val))
     }
 
-    return Object.keys(query).map(function(key) {
-      if (Array.isArray(query[key])) {
-        return query[key].map(function(val) { return pairUp(key, val) }).join('&')
+    function recurseKeys(key, val) {
+      if (Array.isArray(val)) {
+        return val.length ?
+          val.map(function(v, i) { return recurseKeys(key + '.' + i, v) }).join('&') :
+          encodeURIComponent(key) + '=[]'
+      } else if (val && typeof val === 'object') {
+        return Object.keys(val).length ?
+          recurse(val, key + '.') :
+          encodeURIComponent(key) + '={}'
       } else {
-        return pairUp(key, query[key])
+        return pairUp(key, val)
       }
-    }).join('&')
+    }
+
+    function recurse(obj, prefix) {
+      return Object.keys(obj).map(function(key) {
+        return recurseKeys(prefix + key, obj[key])
+      }).join('&')
+    }
+
+    return recurse(origObj, '')
   }
 })
