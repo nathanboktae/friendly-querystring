@@ -66,11 +66,13 @@
 
     function recurseKeys(key, val) {
       if (Array.isArray(val)) {
-        return val.length ?
-          val.map(function(v, i) { return recurseKeys(key + '.' + i, v) }).join('&') :
+        var filtered = val.filter(function(v) { return v !== undefined })
+        return filtered.length ?
+          filtered.map(function(v, i) { return recurseKeys(key + '.' + i, v) }).join('&')
+          :
           encodeURIComponent(key) + '=[]'
       } else if (val && typeof val === 'object') {
-        return Object.keys(val).length ?
+        return Object.keys(val).filter(function(k) { return val[k] !== undefined }).length ?
           recurse(val, key + '.') :
           encodeURIComponent(key) + '={}'
       } else {
@@ -79,9 +81,10 @@
     }
 
     function recurse(obj, prefix) {
-      return Object.keys(obj).map(function(key) {
-        return recurseKeys(prefix + key, obj[key])
-      }).join('&')
+      return Object.keys(obj)
+        .filter(function(k) { return obj[k] !== undefined })
+        .map(function(key) { return recurseKeys(prefix + key, obj[key]) })
+        .join('&')
     }
 
     return recurse(origObj, '')

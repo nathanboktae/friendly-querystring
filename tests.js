@@ -60,7 +60,7 @@ describe('friendly querystring', function() {
 
       verify('an array of one value', {
         'foo.0=bar': { foo: ['bar'] },
-        'foo.0=undefined': { foo: [undefined] }
+        'foo.0=false': { foo: [false] }
       })
 
       verify('number coercion', {
@@ -81,12 +81,12 @@ describe('friendly querystring', function() {
         'x.0=false&x.1=true&x.2=TRUE': { x: [false, true, 'TRUE'] }
       })
 
-      verify('empty string and undefined', {
-        'foo.0=&foo.1=undefined&foo.2': { foo: ['', undefined, null] },
-        'one=&two&three=undefined': {
+      verify('empty string and null', {
+        'foo.0=&foo.1': { foo: ['', null] },
+        'one=&two&three=': {
           one: '',
           two: null,
-          three: undefined
+          three: ''
         }
       })
 
@@ -138,11 +138,11 @@ describe('friendly querystring', function() {
         })
 
         verify('complex combination of all the other tests', {
-          'people.0.name.first=Bob&people.0.age=34&people.1.0&people.1.1.hi=undefined': {
+          'people.0.name.first=Bob&people.0.age=34&people.1.0&people.1.1.hi&people.1.1.there=': {
             people: [{
               name: { first: 'Bob' },
               age: 34
-            }, [null, { hi: undefined }]]
+            }, [null, { hi: null, there: '' }]]
           }
         })
       })
@@ -158,6 +158,19 @@ describe('friendly querystring', function() {
             a: 0.7,
             b: -0.5
           })
+        })
+      }
+
+      if (verb === 'stringify') {
+        it('should stringify with only undefineds as an empty array', function() {
+          querystring.stringify({ foo: [undefined] }).should.equal('foo=[]')
+          querystring.stringify({ foo: [undefined, undefined] }).should.equal('foo=[]')
+        })
+
+        it('should not stringify object properties that are undefined', function() {
+          querystring.stringify({ foo: undefined, bar: 'baz' }).should.equal('bar=baz')
+          querystring.stringify({ foo: { bar: undefined } }).should.equal('foo={}')
+          querystring.stringify({ foo: [{ bar: undefined }, { bar: 'baz' }] }).should.equal('foo.0={}&foo.1.bar=baz')
         })
       }
     })
